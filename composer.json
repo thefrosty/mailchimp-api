@@ -32,6 +32,7 @@
     "ext-json": "*"
   },
   "require-dev": {
+    "phpunit/php-code-coverage": "^11.0",
     "phpunit/phpunit": "^11.0",
     "rector/rector": "^2.5",
     "vlucas/phpdotenv": "^2.0"
@@ -47,6 +48,8 @@
     }
   },
   "scripts": {
+    "phpunit": "./vendor/bin/phpunit --colors",
+    "phpunit:coverage": "./vendor/bin/phpunit --colors --coverage-html ./tests/results && php ./tests/clover-results.php ./tests/clover.xml 70",
     "refactor": "rector --ansi",
     "refactor:dry": "rector --dry-run --debug --ansi"
   }
