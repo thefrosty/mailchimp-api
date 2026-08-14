@@ -58,7 +58,7 @@ class MailChimp
      * @param string|null $batch_id Optional ID of an existing batch, if you need to check its status for example.
      * @return Batch            New Batch object.
      */
-    public function new_batch(?string $batch_id = null): Batch
+    public function newBatch(?string $batch_id = null): Batch
     {
         return new Batch($this, $batch_id);
     }
@@ -187,8 +187,12 @@ class MailChimp
      * @param int $timeout
      * @return array|false Assoc array of decoded result
      */
-    private function makeRequest(string $http_verb, string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
-    {
+    private function makeRequest(
+        string $http_verb,
+        string $method,
+        array $args = [],
+        int $timeout = self::TIMEOUT
+    ): bool|array {
         $http_verb = strtolower($http_verb);
         $url = $this->api_endpoint . '/' . $method;
 
