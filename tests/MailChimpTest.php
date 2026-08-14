@@ -3,9 +3,11 @@
 namespace DrewM\MailChimp\Tests;
 
 use DrewM\MailChimp\MailChimp;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+#[CoversClass(MailChimp::class)]
 class MailChimpTest extends TestCase
 {
     /**

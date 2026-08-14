@@ -95,7 +95,7 @@ class Batch
      * @param string|null $batch_id ID of the batch about which to enquire
      * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function check_status(?string $batch_id = null): false|array
+    public function checkStatus(?string $batch_id = null): false|array
     {
         if ($batch_id === null && $this->batch_id) {
             $batch_id = $this->batch_id;
@@ -108,7 +108,7 @@ class Batch
      * Get operations
      * @return array
      */
-    public function get_operations(): array
+    public function getOperations(): array
     {
         return $this->operations;
     }

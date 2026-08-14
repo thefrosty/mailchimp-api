@@ -121,7 +121,7 @@ use \DrewM\MailChimp\MailChimp;
 use \DrewM\MailChimp\Batch;
 
 $MailChimp = new MailChimp('abc123abc123abc123abc123abc123-us1');
-$Batch 	   = $MailChimp->new_batch();
+$Batch 	   = $MailChimp->newBatch();
 ```
 
 You can then make requests on the `Batch` object just as you would normally with the `MailChimp` object. The difference is that you need to set an ID for the operation as the first argument, and also that you won't get a response. The ID is used for finding the result of this request in the combined response from the batch operation.

@@ -1,0 +1,73 @@
+name: CI Tests
+
+on:
+  pull_request:
+
+# Cancels all previous workflow runs for the same branch that have not yet completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name.
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  run-phpcs:
+    name: Run PHPCS
+    if: ${{ !contains(github.ref, 'release') }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ "8.3" ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup
+        id: ci-setup
+        uses: thefrosty/ci-setup@main
+        with:
+          extensions: 'curl'
+          extensions-cache-key: run-phpcs-${{ matrix.php-version }}
+          php-version: ${{ matrix.php-version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tools: 'composer, cs2pr, phpcs'
+
+      - name: Run PHPCS
+        continue-on-error: false
+        id: phpcs
+        run: composer phpcs
+        env:
+          CHANGED_FILES: ${{ steps.ci-setup.outputs.files }}
+          PHP_VERSION: ${{ matrix.php-version }}
+
+      - name: Show PHPCS results in PR
+        if: ${{ always() && steps.phpcs.outcome == 'failure' && matrix.php-version == '8.3' }}
+        run: cs2pr ./phpcs-report.xml
+
+  run-phpunit:
+    name: Run PHPUnit
+    if: ${{ !contains(github.ref, 'release') }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ "8.3" ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        id: ci-setup
+        uses: thefrosty/ci-setup@main
+        with:
+          extensions: 'curl, json, zip'
+          extensions-cache-key: run-phpunit-${{ matrix.php-version }}
+          php-version: ${{ matrix.php-version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tools: 'composer, phpunit:11'
+
+      - name: Run PHPUnit
+        continue-on-error: false
+        id: phpunit
+        run: composer phpunit:coverage
+        env:
+          CHANGED_FILES: ${{ steps.ci-setup.outputs.files }}
+          IS_PHPUNIT__TEST: ${{ true }}

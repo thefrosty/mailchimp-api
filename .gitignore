@@ -1,4 +1,7 @@
 .env
-/vendor
-composer.lock
 .idea
+tests/.phpunit.cache
+tests/results
+tests/clover.xml
+vendor
+composer.lock
