@@ -7,7 +7,6 @@ use DrewM\MailChimp\MailChimp;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use ReflectionProperty;
 
 #[CoversClass(Batch::class)]
 #[CoversClass(MailChimp::class)]
