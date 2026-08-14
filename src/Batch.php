@@ -5,101 +5,80 @@ namespace DrewM\MailChimp;
 /**
  * A MailChimp Batch operation.
  * http://developer.mailchimp.com/documentation/mailchimp/reference/batches/
- *
  * @author Drew McLellan <drew.mclellan@gmail.com>
  */
 class Batch
 {
-    private $MailChimp;
+    private array $operations = [];
 
-    private $operations = array();
-    private $batch_id;
-
-    public function __construct(MailChimp $MailChimp, $batch_id = null)
+    public function __construct(private readonly MailChimp $MailChimp, private $batch_id = null)
     {
-        $this->MailChimp = $MailChimp;
-        $this->batch_id  = $batch_id;
     }
 
     /**
      * Add an HTTP DELETE request operation to the batch - for deleting data
-     *
-     * @param   string $id     ID for the operation within the batch
-     * @param   string $method URL of the API request method
-     *
-     * @return  void
+     * @param string $id ID for the operation within the batch
+     * @param string $method URL of the API request method
      */
-    public function delete($id, $method)
+    public function delete(string $id, string $method): void
     {
         $this->queueOperation('DELETE', $id, $method);
     }
 
     /**
      * Add an HTTP GET request operation to the batch - for retrieving data
-     *
-     * @param   string $id     ID for the operation within the batch
-     * @param   string $method URL of the API request method
-     * @param   array  $args   Assoc array of arguments (usually your data)
-     *
-     * @return  void
+     * @param string $id ID for the operation within the batch
+     * @param string $method URL of the API request method
+     * @param array $args Assoc array of arguments (usually your data)
      */
-    public function get($id, $method, $args = array())
+    public function get(string $id, string $method, array $args = []): void
     {
         $this->queueOperation('GET', $id, $method, $args);
     }
 
     /**
      * Add an HTTP PATCH request operation to the batch - for performing partial updates
-     *
-     * @param   string $id     ID for the operation within the batch
-     * @param   string $method URL of the API request method
-     * @param   array  $args   Assoc array of arguments (usually your data)
-     *
-     * @return  void
+     * @param string $id ID for the operation within the batch
+     * @param string $method URL of the API request method
+     * @param array $args Assoc array of arguments (usually your data)
      */
-    public function patch($id, $method, $args = array())
+    public function patch(string $id, string $method, array $args = []): void
     {
         $this->queueOperation('PATCH', $id, $method, $args);
     }
 
     /**
      * Add an HTTP POST request operation to the batch - for creating and updating items
-     *
-     * @param   string $id     ID for the operation within the batch
-     * @param   string $method URL of the API request method
-     * @param   array  $args   Assoc array of arguments (usually your data)
-     *
+     * @param string $id ID for the operation within the batch
+     * @param string $method URL of the API request method
+     * @param array $args Assoc array of arguments (usually your data)
      * @return  void
      */
-    public function post($id, $method, $args = array())
+    public function post(string $id, string $method, array $args = []): void
     {
         $this->queueOperation('POST', $id, $method, $args);
     }
 
     /**
      * Add an HTTP PUT request operation to the batch - for creating new items
-     *
-     * @param   string $id     ID for the operation within the batch
-     * @param   string $method URL of the API request method
-     * @param   array  $args   Assoc array of arguments (usually your data)
-     *
+     * @param string $id ID for the operation within the batch
+     * @param string $method URL of the API request method
+     * @param array $args Assoc array of arguments (usually your data)
      * @return  void
      */
-    public function put($id, $method, $args = array())
+    public function put(string $id, string $method, array $args = []): void
     {
         $this->queueOperation('PUT', $id, $method, $args);
     }
 
     /**
      * Execute the batch request
-     *
      * @param int $timeout Request timeout in seconds (optional)
-     *
-     * @return  array|false   Assoc array of API response, decoded from JSON
+     * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function execute($timeout = 10)
+    public function execute(int $timeout = 10): false|array
     {
-        $req = array('operations' => $this->operations);
+        $req = ['operations' => $this->operations];
 
         $result = $this->MailChimp->post('batches', $req, $timeout);
 
@@ -113,12 +92,10 @@ class Batch
     /**
      * Check the status of a batch request. If the current instance of the Batch object
      * was used to make the request, the batch_id is already known and is therefore optional.
-     *
-     * @param string $batch_id ID of the batch about which to enquire
-     *
-     * @return  array|false   Assoc array of API response, decoded from JSON
+     * @param string|null $batch_id ID of the batch about which to enquire
+     * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function check_status($batch_id = null)
+    public function check_status(?string $batch_id = null): false|array
     {
         if ($batch_id === null && $this->batch_id) {
             $batch_id = $this->batch_id;
@@ -128,39 +105,35 @@ class Batch
     }
 
     /**
-     *  Get operations
-     *
+     * Get operations
      * @return array
      */
-    public function get_operations()
+    public function get_operations(): array
     {
         return $this->operations;
     }
 
     /**
      * Add an operation to the internal queue.
-     *
-     * @param   string $http_verb GET, POST, PUT, PATCH or DELETE
-     * @param   string $id        ID for the operation within the batch
-     * @param   string $method    URL of the API request method
-     * @param   array  $args      Assoc array of arguments (usually your data)
-     *
-     * @return  void
+     * @param string $http_verb GET, POST, PUT, PATCH or DELETE
+     * @param string $id ID for the operation within the batch
+     * @param string $method URL of the API request method
+     * @param array|null $args Assoc array of arguments (usually your data)
      */
-    private function queueOperation($http_verb, $id, $method, $args = null)
+    private function queueOperation(string $http_verb, string $id, string $method, ?array $args = null): void
     {
-        $operation = array(
+        $operation = [
             'operation_id' => $id,
-            'method'       => $http_verb,
-            'path'         => $method,
-        );
+            'method' => $http_verb,
+            'path' => $method,
+        ];
 
         if ($args) {
-            if ($http_verb == 'GET') {
-                $key             = 'params';
+            if ($http_verb === 'GET') {
+                $key = 'params';
                 $operation[$key] = $args;
             } else {
-                $key             = 'body';
+                $key = 'body';
                 $operation[$key] = json_encode($args);
             }
         }

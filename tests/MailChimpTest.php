@@ -4,27 +4,26 @@ namespace DrewM\MailChimp\Tests;
 
 use DrewM\MailChimp\MailChimp;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 class MailChimpTest extends TestCase
 {
     /**
-     * @throws \Exception
+     * @throws RuntimeException
      */
-    public function testInvalidAPIKey()
+    public function testInvalidAPIKey(): void
     {
-        $this->expectException('\Exception');
+        $this->expectException('RuntimeException');
         new MailChimp('abc');
     }
 
     /**
-     * @throws \Exception
      */
-    public function testInstantiation()
+    public function testInstantiation(): void
     {
         $MC_API_KEY = getenv('MC_API_KEY');
 
         $MailChimp = new MailChimp($MC_API_KEY, 'https://api.mailchimp.com/3.0');
-        $this->assertInstanceOf('\DrewM\MailChimp\MailChimp', $MailChimp);
 
         $this->assertSame('https://api.mailchimp.com/3.0', $MailChimp->getApiEndpoint());
 
@@ -32,24 +31,23 @@ class MailChimpTest extends TestCase
 
         $this->assertFalse($MailChimp->getLastError());
 
-        $this->assertSame(array('headers' => null, 'body' => null), $MailChimp->getLastResponse());
+        $this->assertSame(['headers' => null, 'body' => null], $MailChimp->getLastResponse());
 
-        $this->assertSame(array(), $MailChimp->getLastRequest());
+        $this->assertSame([], $MailChimp->getLastRequest());
     }
 
     /**
-     * @throws \Exception
      */
-    public function testSubscriberHash()
+    public function testSubscriberHash(): void
     {
-        $email    = 'Foo@Example.Com';
+        $email = 'Foo@Example.Com';
         $expected = md5(strtolower($email));
-        $result   = MailChimp::subscriberHash($email);
+        $result = MailChimp::subscriberHash($email);
 
         $this->assertEquals($expected, $result);
     }
 
-    public function testResponseState()
+    public function testResponseState(): void
     {
         $MC_API_KEY = getenv('MC_API_KEY');
 
@@ -62,7 +60,7 @@ class MailChimpTest extends TestCase
 
         // But now we have an error message
         $this->assertSame(
-            'Unknown error, call getLastResponse() to find out what happened.',
+            'Unknown error, call `getLastResponse()` to find out what happened.',
             $MailChimp->getLastError()
         );
     }
