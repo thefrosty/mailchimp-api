@@ -56,7 +56,7 @@ class Webhook
         self::$receivedWebhook = $input;
         parse_str($input, $result);
         if ($result && isset($result['type'])) {
-            self::dispatchWebhookEvent($result['type'], $result['data']);
+            self::dispatchWebhookEvent($result['type'], $result);
             return $result;
         }
 
