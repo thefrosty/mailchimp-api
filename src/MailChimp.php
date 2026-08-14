@@ -4,6 +4,8 @@ namespace DrewM\MailChimp;
 
 use CurlHandle;
 use RuntimeException;
+use function curl_close;
+use const PHP_VERSION_ID;
 
 /**
  * Super-simple, minimum abstraction MailChimp API v3 wrapper
@@ -255,7 +257,11 @@ class MailChimp
         $response = $this->setResponseState($response, $responseContent, $ch);
         $formattedResponse = $this->formatResponse($response);
 
-        curl_close($ch);
+        if (PHP_VERSION_ID >= 80000) {
+            unset($ch);
+        } else {
+            curl_close($ch);
+        }
 
         $isSuccess = $this->determineSuccess($response, $formattedResponse, $timeout);
 
