@@ -17,9 +17,9 @@ class BatchTest extends TestCase
         $MailChimp = new MailChimp($MC_API_KEY);
         $Batch     = $MailChimp->new_batch('1');
 
-        $this->assertInstanceOf('\DrewM\MailChimp\Batch', $Batch);
+        $this->assertInstanceOf(\DrewM\MailChimp\Batch::class, $Batch);
 
-        $this->assertSame(array(), $Batch->get_operations());
+        $this->assertSame([], $Batch->get_operations());
     }
 
 }

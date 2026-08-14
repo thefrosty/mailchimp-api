@@ -4,7 +4,7 @@
 
 include_once \dirname(__DIR__) . '/vendor/autoload.php';
 
-if (!\class_exists('Dotenv\Dotenv')) {
+if (!\class_exists(\Dotenv\Dotenv::class)) {
     throw new \RuntimeException('You need to define environment variables for configuration or add "symfony/dotenv" as a Composer dependency to load variables from a .env file.');
 }
 

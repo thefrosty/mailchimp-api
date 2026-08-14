@@ -24,7 +24,7 @@ class MailChimpTest extends TestCase
         $MC_API_KEY = getenv('MC_API_KEY');
 
         $MailChimp = new MailChimp($MC_API_KEY, 'https://api.mailchimp.com/3.0');
-        $this->assertInstanceOf('\DrewM\MailChimp\MailChimp', $MailChimp);
+        $this->assertInstanceOf(\DrewM\MailChimp\MailChimp::class, $MailChimp);
 
         $this->assertSame('https://api.mailchimp.com/3.0', $MailChimp->getApiEndpoint());
 
@@ -32,9 +32,9 @@ class MailChimpTest extends TestCase
 
         $this->assertFalse($MailChimp->getLastError());
 
-        $this->assertSame(array('headers' => null, 'body' => null), $MailChimp->getLastResponse());
+        $this->assertSame(['headers' => null, 'body' => null], $MailChimp->getLastResponse());
 
-        $this->assertSame(array(), $MailChimp->getLastRequest());
+        $this->assertSame([], $MailChimp->getLastRequest());
     }
 
     /**

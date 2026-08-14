@@ -10,7 +10,7 @@ namespace DrewM\MailChimp;
  */
 class Webhook
 {
-    private static $eventSubscriptions = array();
+    private static $eventSubscriptions = [];
     private static $receivedWebhook    = null;
 
     /**
@@ -23,7 +23,7 @@ class Webhook
      */
     public static function subscribe($event, callable $callback)
     {
-        if (!isset(self::$eventSubscriptions[$event])) self::$eventSubscriptions[$event] = array();
+        if (!isset(self::$eventSubscriptions[$event])) self::$eventSubscriptions[$event] = [];
         self::$eventSubscriptions[$event][] = $callback;
 
         self::receive();
@@ -87,7 +87,7 @@ class Webhook
                 $callback($data);
             }
             // reset subscriptions
-            self::$eventSubscriptions[$event] = array();
+            self::$eventSubscriptions[$event] = [];
         }
     }
 }
