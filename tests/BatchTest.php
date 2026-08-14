@@ -4,22 +4,20 @@ namespace DrewM\MailChimp\Tests;
 
 use DrewM\MailChimp\MailChimp;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class BatchTest extends TestCase
 {
-    /**
-     * @throws \Exception
-     */
-    public function testNewBatch()
+
+    public function testNewBatch(): void
     {
         $MC_API_KEY = getenv('MC_API_KEY');
 
         $MailChimp = new MailChimp($MC_API_KEY);
-        $Batch     = $MailChimp->new_batch('1');
+        $Batch = $MailChimp->new_batch('1');
+        $reflection = new ReflectionClass($Batch);
 
-        $this->assertInstanceOf(\DrewM\MailChimp\Batch::class, $Batch);
-
+        $this->assertInstanceOf(MailChimp::class, $reflection->getProperty('MailChimp')->getValue($Batch));
         $this->assertSame([], $Batch->get_operations());
     }
-
 }

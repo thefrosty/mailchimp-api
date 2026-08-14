@@ -2,6 +2,9 @@
 
 namespace DrewM\MailChimp;
 
+use CurlHandle;
+use RuntimeException;
+
 /**
  * Super-simple, minimum abstraction MailChimp API v3 wrapper
  * MailChimp API v3: http://developer.mailchimp.com
@@ -20,7 +23,6 @@ class MailChimp
         http://snippets.webaware.com.au/howto/stop-turning-off-curlopt_ssl_verifypeer-and-fix-your-php-config/
     */
     public bool $verify_ssl = true;
-
     private bool $request_successful = false;
     private string $last_error = '';
     private array $last_response = [];
@@ -29,18 +31,18 @@ class MailChimp
     /**
      * Create a new instance
      * @param string $api_key Your MailChimp API key
-     * @param string $api_endpoint Optional custom API endpoint
-     * @throws \Exception
+     * @param string|null $api_endpoint Optional custom API endpoint
+     * @throws RuntimeException
      */
-    public function __construct(private $api_key, $api_endpoint = null)
+    public function __construct(private readonly string $api_key, ?string $api_endpoint = null)
     {
         if (!function_exists('curl_init') || !function_exists('curl_setopt')) {
-            throw new \Exception("cURL support is required, but can't be found.");
+            throw new RuntimeException("cURL support is required, but can't be found.");
         }
 
         if ($api_endpoint === null) {
             if (!str_contains($this->api_key, '-')) {
-                throw new \Exception("Invalid MailChimp API key supplied.");
+                throw new RuntimeException("Invalid MailChimp API key supplied.");
             }
             [, $data_center] = explode('-', $this->api_key);
             $this->api_endpoint = str_replace('<dc>', $data_center, $this->api_endpoint);
@@ -53,10 +55,10 @@ class MailChimp
 
     /**
      * Create a new instance of a Batch request. Optionally with the ID of an existing batch.
-     * @param string $batch_id Optional ID of an existing batch, if you need to check its status for example.
+     * @param string|null $batch_id Optional ID of an existing batch, if you need to check its status for example.
      * @return Batch            New Batch object.
      */
-    public function new_batch($batch_id = null)
+    public function new_batch(?string $batch_id = null): Batch
     {
         return new Batch($this, $batch_id);
     }
@@ -64,7 +66,7 @@ class MailChimp
     /**
      * @return string The url to the API endpoint
      */
-    public function getApiEndpoint()
+    public function getApiEndpoint(): string
     {
         return $this->api_endpoint;
     }
@@ -73,9 +75,9 @@ class MailChimp
     /**
      * Convert an email address into a 'subscriber hash' for identifying the subscriber in a method URL
      * @param string $email The subscriber's email address
-     * @return  string          Hashed version of the input
+     * @return string          Hashed version of the input
      */
-    public static function subscriberHash($email)
+    public static function subscriberHash(string $email): string
     {
         return md5(strtolower($email));
     }
@@ -84,7 +86,7 @@ class MailChimp
      * Was the last request successful?
      * @return bool  True for success, false for failure
      */
-    public function success()
+    public function success(): bool
     {
         return $this->request_successful;
     }
@@ -92,9 +94,9 @@ class MailChimp
     /**
      * Get the last error returned by either the network transport, or by the API.
      * If something didn't work, this should contain the string describing the problem.
-     * @return  string|false  describing the error
+     * @return string|false  describing the error
      */
-    public function getLastError()
+    public function getLastError(): false|string
     {
         return $this->last_error ?: false;
     }
@@ -103,7 +105,7 @@ class MailChimp
      * Get an array containing the HTTP headers and the body of the API response.
      * @return array  Assoc array with keys 'headers' and 'body'
      */
-    public function getLastResponse()
+    public function getLastResponse(): array
     {
         return $this->last_response;
     }
@@ -112,7 +114,7 @@ class MailChimp
      * Get an array containing the HTTP headers and the body of the API request.
      * @return array  Assoc array
      */
-    public function getLastRequest()
+    public function getLastRequest(): array
     {
         return $this->last_request;
     }
@@ -124,7 +126,7 @@ class MailChimp
      * @param int $timeout Timeout limit for request in seconds
      * @return  array|false   Assoc array of API response, decoded from JSON
      */
-    public function delete($method, $args = [], $timeout = self::TIMEOUT)
+    public function delete(string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
     {
         return $this->makeRequest('delete', $method, $args, $timeout);
     }
@@ -134,9 +136,9 @@ class MailChimp
      * @param string $method URL of the API request method
      * @param array $args Assoc array of arguments (usually your data)
      * @param int $timeout Timeout limit for request in seconds
-     * @return  array|false   Assoc array of API response, decoded from JSON
+     * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function get($method, $args = [], $timeout = self::TIMEOUT)
+    public function get(string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
     {
         return $this->makeRequest('get', $method, $args, $timeout);
     }
@@ -146,9 +148,9 @@ class MailChimp
      * @param string $method URL of the API request method
      * @param array $args Assoc array of arguments (usually your data)
      * @param int $timeout Timeout limit for request in seconds
-     * @return  array|false   Assoc array of API response, decoded from JSON
+     * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function patch($method, $args = [], $timeout = self::TIMEOUT)
+    public function patch(string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
     {
         return $this->makeRequest('patch', $method, $args, $timeout);
     }
@@ -158,9 +160,9 @@ class MailChimp
      * @param string $method URL of the API request method
      * @param array $args Assoc array of arguments (usually your data)
      * @param int $timeout Timeout limit for request in seconds
-     * @return  array|false   Assoc array of API response, decoded from JSON
+     * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function post($method, $args = [], $timeout = self::TIMEOUT)
+    public function post(string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
     {
         return $this->makeRequest('post', $method, $args, $timeout);
     }
@@ -170,9 +172,9 @@ class MailChimp
      * @param string $method URL of the API request method
      * @param array $args Assoc array of arguments (usually your data)
      * @param int $timeout Timeout limit for request in seconds
-     * @return  array|false   Assoc array of API response, decoded from JSON
+     * @return array|false   Assoc array of API response, decoded from JSON
      */
-    public function put($method, $args = [], $timeout = self::TIMEOUT)
+    public function put(string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
     {
         return $this->makeRequest('put', $method, $args, $timeout);
     }
@@ -185,8 +187,9 @@ class MailChimp
      * @param int $timeout
      * @return array|false Assoc array of decoded result
      */
-    private function makeRequest($http_verb, $method, $args = [], $timeout = self::TIMEOUT)
+    private function makeRequest(string $http_verb, string $method, array $args = [], int $timeout = self::TIMEOUT): bool|array
     {
+        $http_verb = strtolower($http_verb);
         $url = $this->api_endpoint . '/' . $method;
 
         $response = $this->prepareStateForRequest($http_verb, $method, $url, $timeout);
@@ -262,7 +265,7 @@ class MailChimp
      * @param integer $timeout
      * @return array
      */
-    private function prepareStateForRequest($http_verb, $method, $url, $timeout)
+    private function prepareStateForRequest(string $http_verb, string $method, string $url, int $timeout): array
     {
         $this->last_error = '';
 
@@ -293,11 +296,11 @@ class MailChimp
      * @param string $headersAsString
      * @return array
      */
-    private function getHeadersAsArray($headersAsString)
+    private function getHeadersAsArray(string $headersAsString): array
     {
         $headers = [];
 
-        foreach (explode("\r\n", $headersAsString) as $i => $line) {
+        foreach (explode("\r\n", $headersAsString) as $line) {
             if (preg_match('/HTTP\/[1-2]/', substr($line, 0, 7)) === 1) { // http code
                 continue;
             }
@@ -310,7 +313,7 @@ class MailChimp
             [$key, $value] = explode(':', $line);
             $value = ltrim($value);
 
-            if ($key == 'Link') {
+            if ($key === 'Link') {
                 $value = array_merge(
                     ['_raw' => $value],
                     $this->getLinkHeaderAsArray($value)
@@ -332,7 +335,7 @@ class MailChimp
      * @param string $linkHeaderAsString
      * @return array
      */
-    private function getLinkHeaderAsArray($linkHeaderAsString)
+    private function getLinkHeaderAsArray(string $linkHeaderAsString): array
     {
         $urls = [];
 
@@ -347,10 +350,10 @@ class MailChimp
 
     /**
      * Encode the data and attach it to the request
-     * @param resource $ch cURL session handle, used by reference
+     * @param CurlHandle $ch cURL session handle, used by reference
      * @param array $data Assoc array of data to attach
      */
-    private function attachRequestPayload(&$ch, $data)
+    private function attachRequestPayload(CurlHandle $ch, array $data): void
     {
         $encoded = json_encode($data);
         $this->last_request['body'] = $encoded;
@@ -362,7 +365,7 @@ class MailChimp
      * @param array $response The response from the curl request
      * @return array|false    The JSON decoded into an array
      */
-    private function formatResponse($response)
+    private function formatResponse(array $response): false|array
     {
         $this->last_response = $response;
 
@@ -376,11 +379,11 @@ class MailChimp
     /**
      * Do post-request formatting and setting state from the response
      * @param array $response The response from the curl request
-     * @param string $responseContent The body of the response from the curl request
-     * @param resource $ch The curl resource
+     * @param bool|string $responseContent The body of the response from the curl request
+     * @param CurlHandle $ch The curl resource
      * @return array    The modified response
      */
-    private function setResponseState($response, $responseContent, $ch)
+    private function setResponseState(array $response, bool|string $responseContent, CurlHandle $ch): array
     {
         if ($responseContent === false) {
             $this->last_error = curl_error($ch);
@@ -401,11 +404,11 @@ class MailChimp
     /**
      * Check if the response was successful or a failure. If it failed, store the error.
      * @param array $response The response from the curl request
-     * @param array|false $formattedResponse The response body payload from the curl request
+     * @param false|array $formattedResponse The response body payload from the curl request
      * @param int $timeout The timeout supplied to the curl request.
      * @return bool     If the request was successful
      */
-    private function determineSuccess($response, $formattedResponse, $timeout)
+    private function determineSuccess(array $response, false|array $formattedResponse, int $timeout): bool
     {
         $status = $this->findHTTPStatus($response, $formattedResponse);
 
@@ -424,17 +427,17 @@ class MailChimp
             return false;
         }
 
-        $this->last_error = 'Unknown error, call getLastResponse() to find out what happened.';
+        $this->last_error = 'Unknown error, call `getLastResponse()` to find out what happened.';
         return false;
     }
 
     /**
      * Find the HTTP status code from the headers or API response body
      * @param array $response The response from the curl request
-     * @param array|false $formattedResponse The response body payload from the curl request
+     * @param false|array $formattedResponse The response body payload from the curl request
      * @return int  HTTP status code
      */
-    private function findHTTPStatus($response, $formattedResponse)
+    private function findHTTPStatus(array $response, false|array $formattedResponse): int
     {
         if (!empty($response['headers']) && isset($response['headers']['http_code'])) {
             return (int)$response['headers']['http_code'];
