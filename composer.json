@@ -53,7 +53,7 @@
     "phpcs": "./vendor/bin/phpcs src --colors --report-full --standard=phpcs-ruleset.xml",
     "phpcs:fix": "../vendor/bin/phpcbf src --colors --report-full --standard=phpcs-ruleset.xml",
     "phpunit": "./vendor/bin/phpunit --colors",
-    "phpunit:coverage": "./vendor/bin/phpunit --colors --coverage-html ./tests/results && php ./tests/clover-results.php ./tests/clover.xml 40",
+    "phpunit:coverage": "./vendor/bin/phpunit --colors --coverage-html ./tests/results && php ./tests/clover-results.php ./tests/clover.xml 85",
     "refactor": "rector --ansi",
     "refactor:dry": "rector --dry-run --debug --ansi"
   }
