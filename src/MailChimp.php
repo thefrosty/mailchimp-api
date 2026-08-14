@@ -320,7 +320,7 @@ class MailChimp
                 continue;
             }
 
-            [$key, $value] = explode(':', $line);
+            [$key, $value] = explode(':', $line, 2);
             $value = ltrim($value);
 
             if ($key === 'Link') {
