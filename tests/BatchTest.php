@@ -2,10 +2,14 @@
 
 namespace DrewM\MailChimp\Tests;
 
+use DrewM\MailChimp\Batch;
 use DrewM\MailChimp\MailChimp;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
+#[CoversClass(Batch::class)]
+#[CoversClass(MailChimp::class)]
 class BatchTest extends TestCase
 {
 
