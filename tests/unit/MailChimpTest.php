@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
+use ReflectionProperty;
 use RuntimeException;
 use function getenv;
 use function json_encode;
@@ -366,6 +367,62 @@ class MailChimpTest extends TestCase
         unset($ch);
 
         $this->assertIsArray($result);
+    }
+
+    public function testDetermineSuccessTrue(): void
+    {
+        $MailChimp = $this->getMailChimp();
+
+        $method = new ReflectionMethod(MailChimp::class, 'determineSuccess');
+        $property = new ReflectionProperty(MailChimp::class, 'request_successful');
+        $response = ['headers' => ['http_code' => 201]];
+        $result = $method->invoke($MailChimp, $response, false, 10);
+        $this->assertTrue($result);
+        $this->assertTrue($property->getValue($MailChimp));
+    }
+
+    public function testDetermineSuccessError(): void
+    {
+        $MailChimp = $this->getMailChimp();
+
+        $method = new ReflectionMethod(MailChimp::class, 'determineSuccess');
+        $property = new ReflectionProperty(MailChimp::class, 'last_error');
+        $response = ['headers' => ['http_code' => 302]];
+        $result = $method->invoke($MailChimp, $response, ['detail' => '', 'status' => 302], 10);
+        $this->assertFalse($result);
+        $this->assertNotEmpty($property->getValue($MailChimp));
+    }
+
+    public function testDetermineSuccessTimeout(): void
+    {
+        $MailChimp = $this->getMailChimp();
+
+        $method = new ReflectionMethod(MailChimp::class, 'determineSuccess');
+        $property = new ReflectionProperty(MailChimp::class, 'last_error');
+        $response = ['headers' => ['http_code' => 302, 'total_time' => 20]];
+        $result = $method->invoke($MailChimp, $response, ['status' => 302], 10);
+        $this->assertFalse($result);
+        $this->assertNotEmpty($property->getValue($MailChimp));
+    }
+
+    public function testFindHTTPStatus(): void
+    {
+        $MailChimp = $this->getMailChimp();
+
+        $method = new ReflectionMethod(MailChimp::class, 'findHTTPStatus');
+        $response = ['headers' => ['http_code' => '200']];
+        $result = $method->invoke($MailChimp, $response, false);
+        $this->assertIsInt($result);
+        $this->assertSame(200, $result);
+
+        $response = ['body' => ['http_code' => '200']];
+        $result = $method->invoke($MailChimp, $response,  ['status' => '302']);
+        $this->assertIsInt($result);
+        $this->assertSame(302, $result);
+
+        $result = $method->invoke($MailChimp, [],  []);
+        $this->assertIsInt($result);
+        $this->assertSame(418, $result);
     }
 
     private function getMailChimp(?string $api_key = null, ?string $api_endpoint = null): MailChimp
