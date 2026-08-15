@@ -1,8 +1,8 @@
 {
-  "name": "drewm/mailchimp-api",
+  "name": "thefrosty/mailchimp-api",
   "description": "Super-simple, minimum abstraction MailChimp API v3 wrapper",
   "license": "MIT",
-  "homepage": "https://github.com/drewm/mailchimp-api",
+  "homepage": "https://github.com/thefrosty/mailchimp-api",
   "authors": [
     {
       "name": "Drew McLellan",
