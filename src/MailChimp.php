@@ -39,7 +39,7 @@ class MailChimp
     public function __construct(private readonly string $api_key, ?string $api_endpoint = null)
     {
         if (!function_exists('curl_init') || !function_exists('curl_setopt')) {
-            throw new RuntimeException("cURL support is required, but can't be found.");
+            throw new RuntimeException("cURL support is required, but can't be found."); // @codeCoverageIgnore
         }
 
         if ($api_endpoint === null) {
@@ -257,11 +257,7 @@ class MailChimp
         $response = $this->setResponseState($response, $responseContent, $ch);
         $formattedResponse = $this->formatResponse($response);
 
-        if (PHP_VERSION_ID >= 80000) {
-            unset($ch);
-        } else {
-            curl_close($ch);
-        }
+        unset($ch); // https://php.watch/versions/8.5/curl_close-curl_share_close-deprecated
 
         $isSuccess = $this->determineSuccess($response, $formattedResponse, $timeout);
 
@@ -373,9 +369,9 @@ class MailChimp
     /**
      * Decode the response and format any error messages for debugging
      * @param array $response The response from the curl request
-     * @return array|false    The JSON decoded into an array
+     * @return false|array|string The JSON decoded into an array
      */
-    private function formatResponse(array $response): false|array
+    private function formatResponse(array $response): false|array|string
     {
         $this->last_response = $response;
 
