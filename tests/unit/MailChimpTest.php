@@ -6,9 +6,11 @@ use DrewM\MailChimp\Batch;
 use DrewM\MailChimp\MailChimp;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use ReflectionClass;
 use ReflectionMethod;
+use RuntimeException;
+use function getenv;
+use function json_encode;
 
 #[CoversClass(MailChimp::class)]
 #[CoversClass(Batch::class)]
@@ -27,9 +29,7 @@ class MailChimpTest extends TestCase
      */
     public function testInstantiation(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY, 'https://api.mailchimp.com/3.0');
+        $MailChimp = $this->getMailChimp(api_endpoint: 'https://api.mailchimp.com/3.0');
 
         $this->assertSame('https://api.mailchimp.com/3.0', $MailChimp->getApiEndpoint());
 
@@ -55,9 +55,7 @@ class MailChimpTest extends TestCase
 
     public function testResponseState(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $MailChimp->get('lists');
 
@@ -76,9 +74,7 @@ class MailChimpTest extends TestCase
      */
     public function testNewBatch(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY, 'https://api.mailchimp.com/3.0');
+        $MailChimp = $this->getMailChimp(api_endpoint: 'https://api.mailchimp.com/3.0');
 
         $Batch = $MailChimp->newBatch();
 
@@ -100,9 +96,7 @@ class MailChimpTest extends TestCase
      */
     public function testDelete(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $MailChimp->delete('lists/list-id/members/subscriber-hash');
 
@@ -124,9 +118,7 @@ class MailChimpTest extends TestCase
      */
     public function testPost(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $MailChimp->post('lists/list-id/members', [
             'email_address' => 'test@example.com',
@@ -148,9 +140,7 @@ class MailChimpTest extends TestCase
      */
     public function testPut(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $MailChimp->put('lists/list-id/members/subscriber-hash', [
             'email_address' => 'test@example.com',
@@ -172,9 +162,7 @@ class MailChimpTest extends TestCase
      */
     public function testPatch(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $MailChimp->patch('lists/list-id/members/subscriber-hash', [
             'merge_fields' => ['FNAME' => 'Test'],
@@ -194,12 +182,9 @@ class MailChimpTest extends TestCase
      */
     public function testGetHeadersAsArray(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $method = new ReflectionMethod(MailChimp::class, 'getHeadersAsArray');
-        $method->setAccessible(true);
 
         // Test parsing standard headers with Link header containing angle brackets (RFC 5988)
         $rawHeaders = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nX-Frame-Options: DENY\r\nLink: <https://api.mailchimp.com/schema>; rel=\"describedBy\", <https://api.mailchimp.com/lists>; rel=\"dashboard\"\r\n";
@@ -222,12 +207,9 @@ class MailChimpTest extends TestCase
      */
     public function testGetHeadersAsArraySimple(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $method = new ReflectionMethod(MailChimp::class, 'getHeadersAsArray');
-        $method->setAccessible(true);
 
         $rawHeaders = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nX-Custom-Header: custom-value\r\n";
         $result = $method->invoke($MailChimp, $rawHeaders);
@@ -242,12 +224,9 @@ class MailChimpTest extends TestCase
      */
     public function testGetHeadersAsArrayEmptyLines(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $method = new ReflectionMethod(MailChimp::class, 'getHeadersAsArray');
-        $method->setAccessible(true);
 
         // Simulate the HTTP header output from curl with blank lines
         $rawHeaders = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\nX-Custom: value\r\n\r\n";
@@ -262,12 +241,9 @@ class MailChimpTest extends TestCase
      */
     public function testGetLinkHeaderAsArray(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $method = new ReflectionMethod(MailChimp::class, 'getLinkHeaderAsArray');
-        $method->setAccessible(true);
 
         $linkHeader = '<https://us13.api.mailchimp.com/schema/3.0/Lists/Instance.json>; rel="describedBy", <https://us13.admin.mailchimp.com/lists/members/?id=XXXX>; rel="dashboard"';
         $result = $method->invoke($MailChimp, $linkHeader);
@@ -283,12 +259,9 @@ class MailChimpTest extends TestCase
      */
     public function testGetLinkHeaderAsArrayEmpty(): void
     {
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
 
         $method = new ReflectionMethod(MailChimp::class, 'getLinkHeaderAsArray');
-        $method->setAccessible(true);
 
         $result = $method->invoke($MailChimp, '');
 
@@ -298,7 +271,6 @@ class MailChimpTest extends TestCase
     /**
      * Test the language header branch in makeRequest by inspecting
      * the request through a partial mock's overridable method.
-     *
      * Note: The language header and PUT Allow header branches in makeRequest
      * can only be tested with a successful API connection. With a fake key,
      * cURL doesn't populate request_header on connection failure.
@@ -309,13 +281,12 @@ class MailChimpTest extends TestCase
         // by testing the HTTP header construction logic directly.
         // We test by verifying the header construction uses the right values
         // through the request recorded state.
-        $MC_API_KEY = getenv('MC_API_KEY');
 
         // Test language header: the get() method passes language in args
         // which triggers the language header branch in makeRequest.
         // We verify this indirectly by checking that the request URL
         // includes the query string parameters.
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
         $MailChimp->get('lists', ['language' => 'en-US']);
 
         // The query string 'language=en-US' gets appended to the curl URL
@@ -349,9 +320,7 @@ class MailChimpTest extends TestCase
         // Similar to language header test — the PUT Allow header is
         // constructed inside makeRequest before the cURL call.
         // We verify the method was called with PUT through the request record.
-        $MC_API_KEY = getenv('MC_API_KEY');
-
-        $MailChimp = new MailChimp($MC_API_KEY);
+        $MailChimp = $this->getMailChimp();
         $MailChimp->put('lists/list-id/members/hash', [
             'email_address' => 'test@example.com',
             'status' => 'unsubscribed',
@@ -364,5 +333,44 @@ class MailChimpTest extends TestCase
         // array when $http_verb === 'put'. With a failed connection,
         // cURL doesn't provide request_header to inspect.
         // Coverage is verified through the source code line coverage.
+    }
+
+    public function testFormatResponse(): void
+    {
+        $MailChimp = $this->getMailChimp();
+
+        $method = new ReflectionMethod(MailChimp::class, 'formatResponse');
+
+        $response = ['body' => json_encode('something good')];
+        $result = $method->invoke($MailChimp, $response);
+
+        $this->assertIsString($result);
+    }
+
+    public function testSetResponseState(): void
+    {
+        $MailChimp = $this->getMailChimp();
+
+        $method = new ReflectionMethod(MailChimp::class, 'setResponseState');
+
+        $response = [
+            'headers' => [
+                'header_size' => 0,
+                'httpHeaders' => '',
+                'request_header' => '',
+            ],
+            'body' => json_encode('body'),
+        ];
+        $ch = curl_init();
+        $result = $method->invoke($MailChimp, $response, $response['body'], $ch);
+        unset($ch);
+
+        $this->assertIsArray($result);
+    }
+
+    private function getMailChimp(?string $api_key = null, ?string $api_endpoint = null): MailChimp
+    {
+        $MC_API_KEY = getenv('MC_API_KEY');
+        return new MailChimp($api_key ?? $MC_API_KEY, $api_endpoint);
     }
 }
