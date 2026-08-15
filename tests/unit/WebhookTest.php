@@ -1,6 +1,6 @@
 <?php
 
-namespace DrewM\MailChimp\Tests\unit;
+namespace DrewM\MailChimp\Tests;
 
 use DrewM\MailChimp\Webhook;
 use PHPUnit\Framework\Attributes\CoversClass;
