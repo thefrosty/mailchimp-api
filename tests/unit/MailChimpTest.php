@@ -1,14 +1,14 @@
 <?php
 
-namespace DrewM\MailChimp\Tests;
+namespace DrewM\MailChimp\Tests\unit;
 
 use DrewM\MailChimp\Batch;
 use DrewM\MailChimp\MailChimp;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use ReflectionClass;
 use ReflectionMethod;
+use RuntimeException;
 
 #[CoversClass(MailChimp::class)]
 #[CoversClass(Batch::class)]

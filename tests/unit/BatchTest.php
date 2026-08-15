@@ -1,6 +1,6 @@
 <?php
 
-namespace DrewM\MailChimp\Tests;
+namespace DrewM\MailChimp\Tests\unit;
 
 use DrewM\MailChimp\Batch;
 use DrewM\MailChimp\MailChimp;
