@@ -4,8 +4,6 @@ namespace DrewM\MailChimp;
 
 use CurlHandle;
 use RuntimeException;
-use function curl_close;
-use const PHP_VERSION_ID;
 
 /**
  * Super-simple, minimum abstraction MailChimp API v3 wrapper
